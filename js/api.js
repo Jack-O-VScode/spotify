@@ -9,10 +9,21 @@ import { getValidAccessToken, forceRefreshAccessToken, AuthRequiredError } from 
 
 export const API_BASE = "https://api.spotify.com/v1";
 
+// How long to wait when Spotify rate-limits us but we can't read how long
+// for. `Retry-After` is not a CORS-safelisted response header, so a
+// cross-origin fetch only sees it if the server sends
+// Access-Control-Expose-Headers — which Spotify does not. Assuming one
+// second (the old default) meant a rate-limited client carried on hammering
+// the API; this is deliberately conservative instead.
+const ASSUMED_RETRY_AFTER_SECONDS = 8;
+
 export class RateLimitedError extends Error {
-  constructor(retryAfterSeconds) {
+  constructor(retryAfterSeconds, known) {
     super(`Rate limited, retry after ${retryAfterSeconds}s`);
     this.retryAfterSeconds = retryAfterSeconds;
+    // Distinguishes a real Retry-After from our fallback, so the UI can
+    // avoid quoting a countdown it actually invented.
+    this.known = known;
   }
 }
 
@@ -76,8 +87,9 @@ export async function apiFetch(path, options = {}, { _retried = false } = {}) {
   }
 
   if (response.status === 429) {
-    const retryAfter = Number(response.headers.get("Retry-After") || "1");
-    throw new RateLimitedError(retryAfter);
+    const header = Number(response.headers.get("Retry-After"));
+    const known = Number.isFinite(header) && header > 0;
+    throw new RateLimitedError(known ? header : ASSUMED_RETRY_AFTER_SECONDS, known);
   }
 
   if (response.status === 403) {

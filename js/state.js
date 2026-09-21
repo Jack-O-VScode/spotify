@@ -15,6 +15,10 @@ class Store extends EventTarget {
 
   setPlayback(playback) {
     this.playback = playback;
+    // Lets views distinguish "nothing is playing" from "we haven't asked
+    // yet", so a first-run hint doesn't flash up before the first poll
+    // lands.
+    this.hasPolled = true;
     this.dispatchEvent(new CustomEvent("playback"));
   }
 

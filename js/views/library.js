@@ -10,25 +10,61 @@ import { pickImage } from "../format.js";
 import { navigate } from "../router.js";
 import { renderLoading, renderError } from "../components/async-states.js";
 import { icon } from "../icons.js";
+import { store } from "../state.js";
+import { open as openDeviceSheet } from "../components/device-sheet.js";
 
 export function render(container) {
-  load(container);
+  // The hint below subscribes to playback state, and the real teardown is
+  // only known once the async load finishes — so router.js gets a closure
+  // over this box rather than the function directly.
+  const disposeBag = { current: null };
+  load(container, disposeBag);
+  return () => disposeBag.current?.();
 }
 
-async function load(container) {
+async function load(container, disposeBag) {
   renderLoading(container, "Loading your library…");
   try {
     const data = await apiFetch("/me/playlists?limit=50");
-    renderLibrary(container, data.items || []);
+    renderLibrary(container, data.items || [], disposeBag);
   } catch (err) {
-    renderError(container, err, () => load(container));
+    renderError(container, err, () => load(container, disposeBag));
   }
 }
 
-function renderLibrary(container, playlists) {
+// Nothing playing and no active device is the state new users land in, and
+// the cause ("Spotify has to be open somewhere") isn't guessable from an
+// empty player. Shown reactively rather than once, since opening Spotify
+// elsewhere should make it disappear on the next poll.
+function buildNoDeviceHint() {
+  const hint = el("div", { class: "device-hint hidden" }, [
+    el("p", { class: "device-hint-title", text: "Nothing is playing" }),
+    el("p", {
+      class: "device-hint-body",
+      text: "Audio comes from the Spotify app. Open Spotify on a phone, computer or speaker, then pick it here.",
+    }),
+    el("button", { class: "btn-secondary", type: "button", text: "Choose device", onclick: openDeviceSheet }),
+  ]);
+
+  const sync = () => {
+    const showHint = store.hasPolled && !store.playback;
+    hint.classList.toggle("hidden", !showHint);
+  };
+
+  store.addEventListener("playback", sync);
+  sync();
+
+  return { hint, dispose: () => store.removeEventListener("playback", sync) };
+}
+
+function renderLibrary(container, playlists, disposeBag) {
   clear(container);
 
   const page = el("div", { class: "page page-library" });
+
+  const { hint, dispose } = buildNoDeviceHint();
+  disposeBag.current = dispose;
+  page.appendChild(hint);
 
   const shortcuts = el("div", { class: "shortcut-row" }, [
     el(

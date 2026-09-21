@@ -12,9 +12,11 @@ import { showToast } from "./toast.js";
 
 const POLL_INTERVAL_MS = 3000;
 const POST_ACTION_REFRESH_DELAY_MS = 350;
+const MAX_POLL_BACKOFF_SECONDS = 120;
 
 let pollTimer = null;
 let pollPausedUntil = 0;
+let consecutiveRateLimits = 0;
 
 // Registered from app.js rather than imported directly — device-sheet.js
 // already imports from this module (loadDevices, transferPlayback), so a
@@ -63,6 +65,7 @@ async function poll() {
   if (Date.now() < pollPausedUntil) return;
   try {
     const playback = await apiFetch("/me/player");
+    consecutiveRateLimits = 0;
     store.setPlayback(playback);
   } catch (err) {
     if (err instanceof AuthRequiredError) {
@@ -77,7 +80,16 @@ async function poll() {
       return;
     }
     if (err instanceof RateLimitedError) {
-      pollPausedUntil = Date.now() + err.retryAfterSeconds * 1000;
+      // Escalate on consecutive 429s. Spotify's Retry-After isn't readable
+      // cross-origin (see api.js), so the wait is largely guesswork —
+      // backing off further each time we guess wrong is what stops a
+      // limited client from sitting there making it worse.
+      consecutiveRateLimits += 1;
+      const backoffSeconds = Math.min(
+        err.retryAfterSeconds * Math.pow(2, consecutiveRateLimits - 1),
+        MAX_POLL_BACKOFF_SECONDS
+      );
+      pollPausedUntil = Date.now() + backoffSeconds * 1000;
       return;
     }
     if (err instanceof OfflineError) {
@@ -121,7 +133,13 @@ function handleActionError(err) {
     return;
   }
   if (err instanceof RateLimitedError) {
-    showToast(`Spotify says slow down — try again in ${err.retryAfterSeconds}s.`, { variant: "warning" });
+    // Only quote a countdown when Spotify actually told us one.
+    showToast(
+      err.known
+        ? `Spotify says slow down — try again in ${err.retryAfterSeconds}s.`
+        : "Spotify says slow down. Give it a moment and try again.",
+      { variant: "warning" }
+    );
     return;
   }
   if (err instanceof OfflineError) {

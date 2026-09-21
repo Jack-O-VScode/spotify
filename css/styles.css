@@ -58,8 +58,12 @@ p {
 }
 
 #app {
-  height: 100dvh;
+  /* Order matters: the fallback comes first and the modern unit overrides
+     it. 100dvh tracks iOS Safari's collapsing address bar, where 100vh is
+     the full unobstructed height and leaves the tab bar under the browser
+     chrome. */
   height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -321,7 +325,10 @@ p {
   left: 0;
   right: 0;
   bottom: 0;
+  /* dvh with a vh fallback, so a sheet can't grow taller than what's
+     actually visible on iOS and push its close button off-screen. */
   max-height: 92vh;
+  max-height: 92dvh;
   overflow-y: auto;
   background: var(--color-bg-elevated);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
@@ -628,6 +635,29 @@ p {
 /* ---------------------------------------------------------------------------
    Library / playlist grid
    --------------------------------------------------------------------------- */
+.device-hint {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.device-hint-title {
+  font-weight: 700;
+  font-size: calc(14px * var(--text-scale));
+}
+
+.device-hint-body {
+  font-size: calc(12px * var(--text-scale));
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
 .shortcut-row {
   display: flex;
   gap: var(--space-3);

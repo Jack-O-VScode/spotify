@@ -28,7 +28,9 @@ export function renderError(container, err, onRetry) {
 
 export function describeError(err) {
   if (err instanceof RateLimitedError) {
-    return `Spotify is rate-limiting us. Try again in ${err.retryAfterSeconds}s.`;
+    return err.known
+      ? `Spotify is rate-limiting us. Try again in ${err.retryAfterSeconds}s.`
+      : "Spotify is rate-limiting us. Give it a moment and try again.";
   }
   if (err instanceof OfflineError) return err.message;
   if (err instanceof ApiError) {
