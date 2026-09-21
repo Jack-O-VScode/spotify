@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1ed760"/>
+      <stop offset="55%" stop-color="#149c46"/>
+      <stop offset="100%" stop-color="#0b3d20"/>
+    </linearGradient>
+    <radialGradient id="sheen" cx="32%" cy="24%" r="70%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/>
+      <stop offset="35%" stop-color="#ffffff" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="glyphShine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f2fff7"/>
+    </linearGradient>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+  </defs>
+
+  <!-- base -->
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <rect width="512" height="512" fill="url(#sheen)"/>
+
+  <!-- confetti, kept away from the center safe zone -->
+  <g opacity="0.95">
+    <circle cx="96" cy="88" r="10" fill="#ffd23f"/>
+    <circle cx="430" cy="70" r="7" fill="#ff5f7e"/>
+    <circle cx="452" cy="150" r="12" fill="#38e1ff"/>
+    <rect x="60" y="150" width="14" height="14" rx="3" fill="#ff5f7e" transform="rotate(18 67 157)"/>
+    <rect x="410" y="220" width="12" height="12" rx="3" fill="#ffd23f" transform="rotate(-14 416 226)"/>
+    <path d="M420 400 l8 -20 l8 20 l-8 6 z" fill="#38e1ff" transform="rotate(20 428 386)"/>
+    <circle cx="72" cy="420" r="9" fill="#ffd23f"/>
+    <circle cx="60" cy="340" r="6" fill="#ff5f7e"/>
+    <rect x="430" y="330" width="12" height="12" rx="3" fill="#c9ff5f" transform="rotate(30 436 336)"/>
+    <circle cx="256" cy="46" r="6" fill="#ffffff" opacity="0.8"/>
+  </g>
+
+  <!-- glyph: rounded play triangle with a soft glow -->
+  <circle cx="256" cy="256" r="128" fill="#052712" opacity="0.18" filter="url(#soft)"/>
+  <path d="M208 158 C208 145 222 137 234 144 L360 220 C371 227 371 245 360 252 L234 328 C222 335 208 327 208 314 Z"
+        fill="url(#glyphShine)"/>
+</svg>
