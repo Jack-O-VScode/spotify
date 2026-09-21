@@ -82,8 +82,12 @@ export async function apiFetch(path, options = {}, { _retried = false } = {}) {
     throw new ApiError(403, body?.error?.message || "Not permitted.");
   }
 
-  if (response.status === 404 && path.startsWith("/me/player")) {
-    // Spotify returns 404 for player endpoints when there's no active device.
+  if (response.status === 404 && isDeviceRequiredEndpoint(path)) {
+    // Spotify returns 404 for playback *control* endpoints when there's no
+    // active device — but /me/player/devices and /me/player/recently-played
+    // are plain read endpoints that don't need one, and a 404 there means
+    // something else entirely (bad path, restricted endpoint, etc). Mapping
+    // those to "no active device" too would hide the real error.
     throw new NoActiveDeviceError();
   }
 
@@ -94,6 +98,14 @@ export async function apiFetch(path, options = {}, { _retried = false } = {}) {
 
   if (response.status === 204) return null;
   return safeJson(response);
+}
+
+function isDeviceRequiredEndpoint(path) {
+  return (
+    path.startsWith("/me/player") &&
+    !path.startsWith("/me/player/devices") &&
+    !path.startsWith("/me/player/recently-played")
+  );
 }
 
 async function safeJson(response) {

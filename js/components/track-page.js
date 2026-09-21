@@ -5,7 +5,7 @@
 // play() call (playlist context vs. a bare list of URIs).
 // ---------------------------------------------------------------------------
 
-import { el } from "../dom.js";
+import { el, clear } from "../dom.js";
 import { createTrackRow } from "./track-row.js";
 import { createPager } from "../pager.js";
 import { play } from "../player.js";
@@ -22,9 +22,9 @@ export function mountTrackPage({ listEl, loadMoreButton, pagerPath, getPlayArgs,
   store.addEventListener("playback", onPlaybackChange);
 
   async function loadNextPage() {
+    const isFirstPage = loadedUris.length === 0;
     loadMoreButton.disabled = true;
     loadMoreButton.textContent = "Loading…";
-    loadMoreButton.title = "";
     try {
       const items = await pager.loadNext();
       for (const rawItem of items) {
@@ -44,12 +44,31 @@ export function mountTrackPage({ listEl, loadMoreButton, pagerPath, getPlayArgs,
         listEl.appendChild(el("p", { class: "state-message", text: emptyMessage }));
       }
       loadMoreButton.classList.toggle("hidden", !pager.hasMore);
-    } catch (err) {
-      loadMoreButton.textContent = "Retry";
-      loadMoreButton.title = describeError(err);
-    } finally {
       loadMoreButton.disabled = false;
-      if (loadMoreButton.textContent === "Loading…") loadMoreButton.textContent = "Load more";
+      loadMoreButton.textContent = "Load more";
+    } catch (err) {
+      if (isFirstPage) {
+        // Nothing loaded at all yet — a hidden/disabled "Load more" button
+        // would leave the whole view looking blank with no way to retry, so
+        // show a real error takeover instead, same as any other view.
+        clear(listEl);
+        listEl.appendChild(
+          el("div", { class: "state-error" }, [
+            el("p", { text: describeError(err) }),
+            el("button", { class: "btn-secondary", type: "button", text: "Retry", onclick: loadNextPage }),
+          ])
+        );
+        loadMoreButton.classList.add("hidden");
+        loadMoreButton.disabled = false;
+        loadMoreButton.textContent = "Load more";
+      } else {
+        // Some rows are already visible — keep them, and let the existing
+        // (now visibly re-enabled) button retry the next page.
+        loadMoreButton.classList.remove("hidden");
+        loadMoreButton.disabled = false;
+        loadMoreButton.textContent = "Retry";
+        loadMoreButton.title = describeError(err);
+      }
     }
   }
 
