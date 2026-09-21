@@ -8,6 +8,8 @@ import { el, clear } from "../dom.js";
 import { THEMES, applyTheme, getCurrentTheme } from "../theme.js";
 import { logout } from "../auth.js";
 import { renderError } from "../components/async-states.js";
+import { open as openDeviceSheet } from "../components/device-sheet.js";
+import { icon } from "../icons.js";
 
 export function render(container) {
   load(container);
@@ -21,6 +23,14 @@ async function load(container) {
 
   page.appendChild(el("h2", { class: "section-heading", text: "Theme" }));
   page.appendChild(buildThemePicker());
+
+  page.appendChild(el("h2", { class: "section-heading", text: "Playback" }));
+  page.appendChild(
+    el("button", { class: "btn-secondary settings-device-button", type: "button", onclick: openDeviceSheet }, [
+      icon("speaker", { size: 16 }),
+      el("span", { text: "Choose playback device" }),
+    ])
+  );
 
   const accountSection = el("div", { class: "settings-account" }, [
     el("h2", { class: "section-heading", text: "Account" }),

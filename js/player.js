@@ -16,6 +16,18 @@ const POST_ACTION_REFRESH_DELAY_MS = 350;
 let pollTimer = null;
 let pollPausedUntil = 0;
 
+// Registered from app.js rather than imported directly — device-sheet.js
+// already imports from this module (loadDevices, transferPlayback), so a
+// direct import back here would be circular. A callback avoids that while
+// still letting a failed play attempt open the picker immediately instead
+// of leaving the user with just a toast and no way to act on it (the
+// now-playing bar/sheet, the only other entry point to the device picker,
+// is hidden until something is already playing).
+let noActiveDeviceHandler = null;
+export function setNoActiveDeviceHandler(handler) {
+  noActiveDeviceHandler = handler;
+}
+
 export function startPolling() {
   store.loadPersistedDeviceId();
   stopPolling();
@@ -88,6 +100,7 @@ function handleActionError(err) {
   }
   if (err instanceof NoActiveDeviceError) {
     showToast("No active device. Pick one to play on.", { variant: "warning" });
+    if (noActiveDeviceHandler) noActiveDeviceHandler();
     return;
   }
   if (err instanceof RateLimitedError) {

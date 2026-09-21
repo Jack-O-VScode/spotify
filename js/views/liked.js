@@ -4,11 +4,12 @@
 // an offset instead of a playlist context.
 // ---------------------------------------------------------------------------
 
-import { el } from "../dom.js";
+import { el, clear } from "../dom.js";
 import { navigate } from "../router.js";
 import { mountTrackPage } from "../components/track-page.js";
 
 export function render(container) {
+  clear(container);
   container.appendChild(
     el("div", { class: "page page-simple-list" }, [
       el("button", { class: "back-button", type: "button", onclick: () => navigate("#/library"), text: "‹ Library" }),

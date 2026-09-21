@@ -14,9 +14,12 @@ import * as liked from "./views/liked.js";
 import * as recent from "./views/recent.js";
 import * as settings from "./views/settings.js";
 import * as nowPlaying from "./components/now-playing.js";
-import { startPolling, stopPolling } from "./player.js";
+import { startPolling, stopPolling, setNoActiveDeviceHandler } from "./player.js";
+import { open as openDeviceSheet } from "./components/device-sheet.js";
 import { showToast } from "./toast.js";
 import { icon } from "./icons.js";
+
+setNoActiveDeviceHandler(openDeviceSheet);
 
 const root = document.getElementById("app");
 
