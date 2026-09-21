@@ -73,7 +73,7 @@ function createPlaylistCard(playlist) {
         ? el("img", { class: "playlist-card-art", src: art, alt: "", loading: "lazy" })
         : el("div", { class: "playlist-card-art playlist-card-art-placeholder" }),
       el("span", { class: "playlist-card-title", text: playlist.name || "Untitled playlist" }),
-      el("span", { class: "playlist-card-subtitle", text: `${playlist.tracks?.total ?? 0} tracks` }),
+      el("span", { class: "playlist-card-subtitle", text: `${playlist.tracks?.total ?? playlist.items?.total ?? 0} tracks` }),
     ]
   );
 }

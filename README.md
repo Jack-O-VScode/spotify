@@ -107,3 +107,19 @@ which theme is currently active.
   "context" for either of those, unlike a playlist) — load more first if
   you want to start further in.
 - No offline caching of library data; it re-fetches on each visit.
+- The device picker can only show devices where the Spotify app is
+  currently open — that's how Spotify Connect works, not something this
+  app can work around. Open Spotify itself on whichever device you want
+  to control before picking it here.
+
+## A note on Spotify's own API instability
+
+Spotify's Web API has changed materially and repeatedly through
+2025–2026 for apps in Development Mode (endpoint removals, renames like
+`/playlists/{id}/tracks` → `/playlists/{id}/items`, and tighter access
+restrictions with each policy update). If a view that used to work starts
+returning a visible error (this app surfaces the real error message and a
+retry button rather than failing silently), it's worth checking
+[Spotify's Web API changelog](https://developer.spotify.com/documentation/web-api/references/changes)
+before assuming it's a bug here — some of these breaks are on Spotify's
+end and land on every third-party app at once.

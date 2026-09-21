@@ -12,7 +12,11 @@ import { navigate } from "../router.js";
 import { renderLoading, renderError } from "../components/async-states.js";
 import { mountTrackPage } from "../components/track-page.js";
 
-const FIELDS = "id,name,images,owner.display_name,tracks.total";
+// Spotify's Feb/March 2026 migration renamed the playlist's track-count
+// field from `tracks.total` to `items.total` on new Development Mode
+// apps — requesting both is harmless (an unknown field is just omitted
+// from the response) and works whichever name is actually in effect.
+const FIELDS = "id,name,images,owner.display_name,tracks.total,items.total";
 
 export function render(container, params) {
   const playlistId = params.id;
@@ -56,7 +60,10 @@ function renderShell(container, playlist, disposeBag) {
         ? el("img", { class: "detail-header-art", src: art, alt: "" })
         : el("div", { class: "detail-header-art detail-header-art-placeholder" }),
       el("h1", { class: "detail-header-title", text: playlist.name || "Untitled playlist" }),
-      el("p", { class: "detail-header-subtitle", text: `${playlist.owner?.display_name || "Unknown"} · ${playlist.tracks?.total ?? 0} tracks` }),
+      el("p", {
+        class: "detail-header-subtitle",
+        text: `${playlist.owner?.display_name || "Unknown"} · ${playlist.tracks?.total ?? playlist.items?.total ?? 0} tracks`,
+      }),
     ])
   );
 
@@ -71,7 +78,12 @@ function renderShell(container, playlist, disposeBag) {
   disposeBag.current = mountTrackPage({
     listEl,
     loadMoreButton,
-    pagerPath: `/playlists/${encodeURIComponent(playlist.id)}/tracks?limit=50`,
+    // Renamed from /tracks to /items in Spotify's Feb/March 2026 migration —
+    // the old path now 403s on new Development Mode apps.
+    pagerPath: `/playlists/${encodeURIComponent(playlist.id)}/items?limit=50`,
+    // The per-entry key was renamed alongside the endpoint (track -> item);
+    // falling back to .track keeps this working if that's ever not so.
+    mapItem: (rawItem) => rawItem.item || rawItem.track,
     getPlayArgs: (absoluteIndex) => ({ contextUri, offset: { position: absoluteIndex } }),
     emptyMessage: "This playlist is empty.",
   });
