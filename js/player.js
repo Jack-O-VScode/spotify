@@ -33,6 +33,20 @@ export function startPolling() {
   stopPolling();
   poll();
   pollTimer = setInterval(poll, POLL_INTERVAL_MS);
+
+  // A backgrounded tab can't show playback state, so polling it is pure
+  // waste — battery on a phone, and rate-limit budget that's shared across
+  // everyone using the same Spotify app registration. Coming back to the
+  // foreground refreshes immediately rather than showing state up to one
+  // interval stale.
+  if (!visibilityBound) {
+    visibilityBound = true;
+    document.addEventListener("visibilitychange", () => {
+      if (!pollTimer) return; // polling is stopped for another reason
+      if (document.hidden) return;
+      poll();
+    });
+  }
 }
 
 export function stopPolling() {
@@ -42,7 +56,10 @@ export function stopPolling() {
   }
 }
 
+let visibilityBound = false;
+
 async function poll() {
+  if (document.hidden) return;
   if (Date.now() < pollPausedUntil) return;
   try {
     const playback = await apiFetch("/me/player");
@@ -190,6 +207,14 @@ export async function loadDevices() {
     const data = await apiFetch("/me/player/devices");
     const devices = data?.devices || [];
     store.setDevices(devices);
+
+    // A device id saved in a previous session is worthless once that device
+    // closes Spotify, and sending it along would make every play attempt
+    // fail against a device that no longer exists. Drop it and let Spotify
+    // fall back to whatever is actually active.
+    if (store.selectedDeviceId && !devices.some((device) => device.id === store.selectedDeviceId)) {
+      store.setSelectedDeviceId(null);
+    }
     return devices;
   } catch (err) {
     handleActionError(err);

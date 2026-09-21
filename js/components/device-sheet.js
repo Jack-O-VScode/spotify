@@ -61,21 +61,34 @@ function renderDevices() {
 
   for (const device of devices) {
     const isSelected = device.id === store.selectedDeviceId || device.is_active;
+    // Spotify marks some devices (certain speakers, car systems) as
+    // restricted, meaning the Web API can see them but cannot control them.
+    // Showing them as selectable would just produce silent failures.
+    const restricted = device.is_restricted === true;
+
     listEl.appendChild(
       el(
         "button",
         {
-          class: `device-row${isSelected ? " device-row-selected" : ""}`,
+          class: `device-row${isSelected ? " device-row-selected" : ""}${restricted ? " device-row-restricted" : ""}`,
           type: "button",
+          disabled: restricted ? "disabled" : null,
           onclick: () => selectDevice(device),
         },
         [
           el("span", { class: "device-row-icon", text: deviceIcon(device.type) }),
           el("div", { class: "device-row-text" }, [
             el("span", { class: "device-row-name", text: device.name }),
-            el("span", { class: "device-row-meta", text: device.is_active ? "Currently playing" : device.type }),
+            el("span", {
+              class: "device-row-meta",
+              text: restricted
+                ? "Can't be controlled from here"
+                : device.is_active
+                  ? "Currently playing"
+                  : device.type,
+            }),
           ]),
-          isSelected ? el("span", { class: "device-row-check", text: "✓" }) : null,
+          isSelected && !restricted ? el("span", { class: "device-row-check", text: "✓" }) : null,
         ]
       )
     );

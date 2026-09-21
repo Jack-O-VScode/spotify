@@ -12,7 +12,7 @@
 // playback state and auth, and a stale answer there is worse than no answer.
 // ---------------------------------------------------------------------------
 
-const CACHE_NAME = "spotify-remote-2026-09-22.5";
+const CACHE_NAME = "spotify-remote-2026-09-22.6";
 
 const APP_SHELL = [
   "./",

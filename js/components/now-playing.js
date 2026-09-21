@@ -17,9 +17,13 @@ import { open as openQueueSheet } from "./queue-sheet.js";
 import { enableSwipeToDismiss } from "./swipe-dismiss.js";
 import { icon } from "../icons.js";
 
-function setIcon(button, name, size) {
+// Icon-only buttons need an accessible name of their own: the SVG inside is
+// aria-hidden, so without this a screen reader announces an unlabelled
+// button.
+function setIcon(button, name, size, label) {
   clear(button);
   button.appendChild(icon(name, { size }));
+  if (label) button.setAttribute("aria-label", label);
 }
 
 let miniBarEl = null;
@@ -34,6 +38,7 @@ let displayProgressMs = 0;
 let syncBaseProgressMs = 0;
 let lastSyncPerf = 0;
 let isDragging = false;
+let isDraggingVolume = false;
 let tickTimer = null;
 
 // Element refs updated on each render
@@ -73,14 +78,14 @@ function buildMiniBar() {
   refs.miniTitle = el("span", { class: "mini-bar-title" });
   refs.miniArtist = el("span", { class: "mini-bar-artist" });
   refs.miniPlayPause = el("button", { class: "mini-bar-playpause", type: "button", onclick: handleTogglePlay });
-  setIcon(refs.miniPlayPause, "play", 22);
+  setIcon(refs.miniPlayPause, "play", 22, "Play");
   refs.miniProgress = el("div", { class: "mini-bar-progress-fill" });
 
   const miniPrevButton = el("button", { class: "mini-bar-transport", type: "button", onclick: stopPropAnd(previous) });
-  setIcon(miniPrevButton, "previous", 20);
+  setIcon(miniPrevButton, "previous", 20, "Previous track");
 
   const miniNextButton = el("button", { class: "mini-bar-transport", type: "button", onclick: stopPropAnd(next) });
-  setIcon(miniNextButton, "next", 20);
+  setIcon(miniNextButton, "next", 20, "Next track");
 
   miniBarEl = el("div", { class: "mini-bar mini-bar-hidden", onclick: handleMiniBarClick }, [
     el("div", { class: "mini-bar-progress-track" }, [refs.miniProgress]),
@@ -115,6 +120,7 @@ function buildSheet() {
 
   refs.progressRange = el("input", {
     class: "sheet-progress-range",
+    "aria-label": "Seek",
     type: "range",
     min: "0",
     max: "1000",
@@ -141,19 +147,28 @@ function buildSheet() {
   refs.prevButton = el("button", { class: "transport-button", type: "button", onclick: previous });
   refs.playPauseButton = el("button", { class: "transport-button transport-primary", type: "button", onclick: handleTogglePlay });
   refs.nextButton = el("button", { class: "transport-button", type: "button", onclick: next });
-  setIcon(refs.shuffleButton, "shuffle", 18);
-  setIcon(refs.repeatButton, "repeat", 18);
-  setIcon(refs.prevButton, "previous", 26);
-  setIcon(refs.playPauseButton, "play", 28);
-  setIcon(refs.nextButton, "next", 26);
+  setIcon(refs.shuffleButton, "shuffle", 18, "Shuffle");
+  setIcon(refs.repeatButton, "repeat", 18, "Repeat");
+  setIcon(refs.prevButton, "previous", 26, "Previous track");
+  setIcon(refs.playPauseButton, "play", 28, "Play");
+  setIcon(refs.nextButton, "next", 26, "Next track");
 
   const volumeLowIcon = el("span", { class: "volume-icon" });
   const volumeHighIcon = el("span", { class: "volume-icon" });
   volumeLowIcon.appendChild(icon("volume-low", { size: 16 }));
   volumeHighIcon.appendChild(icon("volume-high", { size: 16 }));
 
-  refs.volumeRange = el("input", { class: "sheet-volume-range", type: "range", min: "0", max: "100", value: "100" });
-  refs.volumeRange.addEventListener("change", () => setVolume(Number(refs.volumeRange.value)));
+  refs.volumeRange = el("input", { class: "sheet-volume-range", "aria-label": "Volume", type: "range", min: "0", max: "100", value: "100" });
+  // Tracked explicitly rather than inferred from document.activeElement:
+  // on touch the range doesn't reliably hold focus, so a poll landing
+  // mid-drag would otherwise yank the slider back to the device's
+  // last-reported volume under the user's finger.
+  refs.volumeRange.addEventListener("pointerdown", () => (isDraggingVolume = true));
+  refs.volumeRange.addEventListener("change", () => {
+    setVolume(Number(refs.volumeRange.value));
+    isDraggingVolume = false;
+  });
+  refs.volumeRange.addEventListener("pointercancel", () => (isDraggingVolume = false));
   refs.volumeRow = el("div", { class: "sheet-volume-row hidden" }, [volumeLowIcon, refs.volumeRange, volumeHighIcon]);
 
   refs.emptyState = el("div", { class: "sheet-empty-state hidden" }, [
@@ -203,7 +218,7 @@ function buildSheet() {
 }
 
 function buildChevronButton() {
-  const button = el("button", { class: "sheet-close-chevron", type: "button", onclick: closeSheet });
+  const button = el("button", { class: "sheet-close-chevron", type: "button", "aria-label": "Close player", onclick: closeSheet });
   button.appendChild(icon("chevronDown", { size: 26 }));
   return button;
 }
@@ -260,7 +275,7 @@ function render() {
     if (art) refs.miniArt.src = art;
     refs.miniTitle.textContent = playback.item.name || "";
     refs.miniArtist.textContent = joinArtists(playback.item.artists);
-    setIcon(refs.miniPlayPause, playback.is_playing ? "pause" : "play", 22);
+    setIcon(refs.miniPlayPause, playback.is_playing ? "pause" : "play", 22, playback.is_playing ? "Pause" : "Play");
 
     refs.sheetTitle.textContent = playback.item.name || "";
     refs.sheetArtist.textContent = joinArtists(playback.item.artists);
@@ -274,14 +289,14 @@ function render() {
       refs.ambient.style.backgroundImage = "none";
     }
 
-    setIcon(refs.playPauseButton, playback.is_playing ? "pause" : "play", 28);
+    setIcon(refs.playPauseButton, playback.is_playing ? "pause" : "play", 28, playback.is_playing ? "Pause" : "Play");
     refs.shuffleButton.classList.toggle("transport-active", Boolean(playback.shuffle_state));
     refs.repeatButton.classList.toggle("transport-active", (playback.repeat_state || "off") !== "off");
-    setIcon(refs.repeatButton, playback.repeat_state === "track" ? "repeat-one" : "repeat", 18);
+    setIcon(refs.repeatButton, playback.repeat_state === "track" ? "repeat-one" : "repeat", 18, `Repeat: ${playback.repeat_state || "off"}`);
 
     const supportsVolume = playback.device?.supports_volume !== false;
     refs.volumeRow.classList.toggle("hidden", !supportsVolume);
-    if (supportsVolume && document.activeElement !== refs.volumeRange && typeof playback.device?.volume_percent === "number") {
+    if (supportsVolume && !isDraggingVolume && typeof playback.device?.volume_percent === "number") {
       refs.volumeRange.value = String(playback.device.volume_percent);
     }
 
