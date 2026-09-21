@@ -197,6 +197,18 @@ export async function loadDevices() {
   }
 }
 
+// Queues a track after whatever is playing. Confirms with a toast because
+// unlike pressing play there's no visible change to show it worked.
+export async function addToQueue(uri, trackName) {
+  const ok = await runAction(() =>
+    apiFetch(withDeviceQuery(`/me/player/queue?uri=${encodeURIComponent(uri)}`), { method: "POST" })
+  );
+  if (ok) {
+    showToast(trackName ? `Queued “${trackName}”` : "Added to queue");
+  }
+  return ok;
+}
+
 export function transferPlayback(deviceId, { play: shouldPlay = false } = {}) {
   return runAction(() =>
     apiFetch("/me/player", {

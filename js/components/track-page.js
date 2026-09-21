@@ -13,8 +13,16 @@ import { store } from "../state.js";
 import { describeError } from "./async-states.js";
 
 // getPlayArgs(absoluteIndex, loadedUris) -> args object for player.play()
-export function mountTrackPage({ listEl, loadMoreButton, pagerPath, getPlayArgs, emptyMessage, mapItem }) {
-  const pager = createPager(pagerPath);
+export function mountTrackPage({
+  listEl,
+  loadMoreButton,
+  pagerPath,
+  fallbackPagerPath = null,
+  getPlayArgs,
+  emptyMessage,
+  mapItem,
+}) {
+  const pager = createPager(pagerPath, { fallbackPath: fallbackPagerPath });
   const loadedUris = []; // absoluteIndex -> uri
   const rowByIndex = new Map();
 

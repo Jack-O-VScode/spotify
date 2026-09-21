@@ -12,6 +12,7 @@ import * as library from "./views/library.js";
 import * as playlistDetail from "./views/playlist-detail.js";
 import * as liked from "./views/liked.js";
 import * as recent from "./views/recent.js";
+import * as search from "./views/search.js";
 import * as settings from "./views/settings.js";
 import * as nowPlaying from "./components/now-playing.js";
 import { startPolling, stopPolling, setNoActiveDeviceHandler } from "./player.js";
@@ -80,7 +81,15 @@ function renderAppShell() {
   const viewContainer = el("div", { class: "view-container" });
 
   const tabs = [
-    { route: "#/library", label: "Library", iconName: "library", matches: (base) => base !== "/settings" },
+    {
+      route: "#/library",
+      label: "Library",
+      iconName: "library",
+      // Playlist detail, Liked Songs and Recently Played are all reached
+      // from Library, so they keep that tab lit.
+      matches: (base) => base !== "/settings" && base !== "/search",
+    },
+    { route: "#/search", label: "Search", iconName: "search", matches: (base) => base === "/search" },
     { route: "#/settings", label: "Settings", iconName: "settings", matches: (base) => base === "/settings" },
   ];
 
@@ -119,6 +128,7 @@ function registerRoutesOnce() {
   registerRoute("/playlist/:id", playlistDetail.render);
   registerRoute("/liked", liked.render);
   registerRoute("/recent", recent.render);
+  registerRoute("/search", search.render);
   registerRoute("/settings", settings.render);
 }
 

@@ -750,6 +750,85 @@ p {
   margin-top: var(--space-3);
 }
 
+/* A row with a secondary action (queue) splits into a large tap target for
+   the primary action and a small one for the secondary, rather than
+   nesting buttons. */
+.track-row-with-action {
+  padding: 0;
+  gap: 0;
+}
+
+.track-row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  text-align: left;
+}
+
+.track-row-main:active {
+  background: var(--color-surface);
+}
+
+.track-row-action {
+  flex-shrink: 0;
+  padding: var(--space-3);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+}
+
+.track-row-action:active {
+  color: var(--color-accent);
+}
+
+/* ---------------------------------------------------------------------------
+   Search
+   --------------------------------------------------------------------------- */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  padding: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.search-bar-icon {
+  color: var(--color-text-secondary);
+  display: flex;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  color: var(--color-text);
+  font-family: var(--font-family);
+  font-size: calc(15px * var(--text-scale));
+  padding: var(--space-2) 0;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search-input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+/* Safari draws its own clear button on type=search; the themed bar already
+   reads as a search field without it. */
+.search-input::-webkit-search-decoration,
+.search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
 /* ---------------------------------------------------------------------------
    Buttons
    --------------------------------------------------------------------------- */

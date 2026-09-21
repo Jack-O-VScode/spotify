@@ -79,9 +79,12 @@ function renderShell(container, playlist, disposeBag) {
   disposeBag.current = mountTrackPage({
     listEl,
     loadMoreButton,
-    // Renamed from /tracks to /items in Spotify's Feb/March 2026 migration —
-    // the old path now 403s on new Development Mode apps.
+    // Renamed from /tracks to /items in Spotify's Feb/March 2026 migration.
+    // Which name an account actually answers on has proven inconsistent, so
+    // the pager falls back to the other one on a 403/404 rather than
+    // leaving the playlist looking empty.
     pagerPath: `/playlists/${encodeURIComponent(playlist.id)}/items?limit=50`,
+    fallbackPagerPath: `/playlists/${encodeURIComponent(playlist.id)}/tracks?limit=50`,
     // The per-entry key was renamed alongside the endpoint (track -> item);
     // falling back to .track keeps this working if that's ever not so.
     mapItem: (rawItem) => rawItem.item || rawItem.track,
