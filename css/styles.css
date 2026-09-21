@@ -1,0 +1,69 @@
+/* Minimal styling to verify the login flow. Replaced by the full themeable
+   stylesheet (css/themes.css + expanded css/styles.css) once login is
+   confirmed working and the real UI gets built. */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #121212;
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  padding: 16px;
+}
+
+#app {
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+}
+
+button {
+  font: inherit;
+  padding: 12px 24px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+}
+
+.login-button {
+  background: #1db954;
+  color: #000000;
+  font-weight: 700;
+  width: 100%;
+}
+
+.logout-button {
+  margin-top: 16px;
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid #535353;
+}
+
+.profile-card h1 {
+  font-size: 1.4rem;
+}
+
+.premium-yes {
+  color: #1db954;
+}
+
+.premium-no {
+  color: #f2a900;
+  font-size: 0.9rem;
+}
+
+.error-banner {
+  background: #4a1515;
+  color: #ff8a8a;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
