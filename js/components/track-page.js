@@ -8,7 +8,7 @@
 import { el, clear } from "../dom.js";
 import { createTrackRow } from "./track-row.js";
 import { createPager } from "../pager.js";
-import { play } from "../player.js";
+import { play, addToQueue } from "../player.js";
 import { store } from "../state.js";
 import { describeError } from "./async-states.js";
 
@@ -44,6 +44,7 @@ export function mountTrackPage({
         const row = createTrackRow(track, {
           isPlaying: isCurrentlyPlaying(track.uri),
           onPlay: () => play(getPlayArgs(absoluteIndex, loadedUris)),
+          onQueue: () => addToQueue(track.uri, track.name),
         });
         rowByIndex.set(absoluteIndex, row);
         listEl.appendChild(row);

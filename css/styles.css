@@ -358,6 +358,33 @@ p {
 }
 
 /* Player sheet */
+.sheet-content-player {
+  /* New stacking context for the ambient layer; .sheet-content already
+     positions this element. */
+  isolation: isolate;
+}
+
+.sheet-ambient {
+  position: absolute;
+  /* Deliberately inset: 0 rather than bleeding outwards — .sheet-content is
+     a scroll container, and an absolutely-positioned child extending past
+     its edges would enlarge the scrollable area and introduce a stray
+     horizontal scroll. */
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(44px) saturate(180%);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* Everything else in the player sheet sits above the ambient layer. */
+.sheet-content-player > *:not(.sheet-ambient) {
+  position: relative;
+  z-index: 1;
+}
+
 .sheet-player-toolbar {
   display: flex;
   align-items: center;

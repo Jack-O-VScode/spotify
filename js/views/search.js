@@ -8,9 +8,10 @@
 
 import { apiFetch } from "../api.js";
 import { el, clear } from "../dom.js";
-import { pickImage, joinArtists, formatDuration } from "../format.js";
+import { pickImage } from "../format.js";
 import { navigate } from "../router.js";
 import { renderError } from "../components/async-states.js";
+import { createTrackRow } from "../components/track-row.js";
 import { play, addToQueue } from "../player.js";
 import { icon } from "../icons.js";
 
@@ -134,35 +135,10 @@ function renderResults(container, data) {
 // A search hit has no surrounding context to play from, so it plays as a
 // one-track queue rather than with a context_uri + offset.
 function createSearchTrackRow(track) {
-  const art = pickImage(track.album?.images, 80);
-
-  return el("div", { class: "track-row track-row-with-action" }, [
-    el(
-      "button",
-      { class: "track-row-main", type: "button", onclick: () => play({ uris: [track.uri] }) },
-      [
-        art
-          ? el("img", { class: "track-row-art", src: art, alt: "", loading: "lazy" })
-          : el("div", { class: "track-row-art track-row-art-placeholder" }),
-        el("div", { class: "track-row-text" }, [
-          el("span", { class: "track-row-title", text: track.name || "Unknown track" }),
-          el("span", { class: "track-row-artist", text: joinArtists(track.artists) }),
-        ]),
-        el("span", { class: "track-row-duration", text: formatDuration(track.duration_ms) }),
-      ]
-    ),
-    el(
-      "button",
-      {
-        class: "track-row-action",
-        type: "button",
-        title: "Add to queue",
-        "aria-label": `Add ${track.name} to queue`,
-        onclick: () => addToQueue(track.uri, track.name),
-      },
-      [icon("queue", { size: 18 })]
-    ),
-  ]);
+  return createTrackRow(track, {
+    onPlay: () => play({ uris: [track.uri] }),
+    onQueue: () => addToQueue(track.uri, track.name),
+  });
 }
 
 function createSearchPlaylistRow(playlist) {

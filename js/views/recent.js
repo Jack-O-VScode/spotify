@@ -22,10 +22,21 @@ export function render(container) {
   page.appendChild(listEl);
   page.appendChild(loadMoreButton);
 
+  // Spotify's recently-played is a play *log*, so a track played three
+  // times in a row appears three times. Collapse repeats to the most recent
+  // entry — mountTrackPage already skips items that map to nothing.
+  const seen = new Set();
+
   return mountTrackPage({
     listEl,
     loadMoreButton,
     pagerPath: "/me/player/recently-played?limit=50",
+    mapItem: (rawItem) => {
+      const track = rawItem.track;
+      if (!track || seen.has(track.uri)) return null;
+      seen.add(track.uri);
+      return track;
+    },
     getPlayArgs: (absoluteIndex, loadedUris) => ({ uris: loadedUris, offset: { position: absoluteIndex } }),
     emptyMessage: "Nothing played recently.",
   });

@@ -28,6 +28,7 @@ const APP_SHELL = [
   "./js/dom.js",
   "./js/format.js",
   "./js/icons.js",
+  "./js/keyboard.js",
   "./js/pager.js",
   "./js/pkce.js",
   "./js/player.js",

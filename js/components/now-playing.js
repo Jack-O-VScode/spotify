@@ -176,9 +176,14 @@ function buildSheet() {
     refs.volumeRow,
   ]);
 
+  // Blurred copy of the album art behind the sheet, the way the Spotify app
+  // tints its player. Purely decorative, so it stays out of the a11y tree.
+  refs.ambient = el("div", { class: "sheet-ambient", "aria-hidden": "true" });
+
   sheetEl = el("div", { class: "sheet sheet-hidden", id: "now-playing-sheet" }, [
     el("div", { class: "sheet-backdrop", onclick: closeSheet }),
     el("div", { class: "sheet-content sheet-content-player" }, [
+      refs.ambient,
       el("div", { class: "sheet-handle" }),
       el("div", { class: "sheet-player-toolbar" }, [
         buildChevronButton(),
@@ -255,7 +260,14 @@ function render() {
     refs.sheetTitle.textContent = playback.item.name || "";
     refs.sheetArtist.textContent = joinArtists(playback.item.artists);
     const bigArt = pickImage(playback.item.album?.images, 500);
-    if (bigArt) refs.sheetArt.src = bigArt;
+    if (bigArt) {
+      refs.sheetArt.src = bigArt;
+      // Percent-encode any quote so the URL can't terminate the url("...")
+      // wrapper early.
+      refs.ambient.style.backgroundImage = `url("${bigArt.replace(/"/g, "%22")}")`;
+    } else {
+      refs.ambient.style.backgroundImage = "none";
+    }
 
     setIcon(refs.playPauseButton, playback.is_playing ? "pause" : "play", 28);
     refs.shuffleButton.classList.toggle("transport-active", Boolean(playback.shuffle_state));

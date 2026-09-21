@@ -19,6 +19,7 @@ import { startPolling, stopPolling, setNoActiveDeviceHandler } from "./player.js
 import { open as openDeviceSheet } from "./components/device-sheet.js";
 import { showToast } from "./toast.js";
 import { icon } from "./icons.js";
+import { initKeyboardShortcuts } from "./keyboard.js";
 
 setNoActiveDeviceHandler(openDeviceSheet);
 
@@ -117,6 +118,7 @@ function renderAppShell() {
   updateActiveTab();
 
   nowPlaying.init();
+  initKeyboardShortcuts();
   startPolling();
 }
 
