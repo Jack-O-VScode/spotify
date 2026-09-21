@@ -241,7 +241,13 @@ export class AuthRequiredError extends Error {
 
 function describeAuthError(errorCode) {
   if (errorCode === "access_denied") {
-    return "Login was cancelled.";
+    // Spotify returns access_denied both when someone taps Cancel and when
+    // the account isn't on this app's test-user list — which, for an app in
+    // Development Mode, is the far more confusing case to hit.
+    return (
+      "Login was cancelled or this Spotify account isn't allowed yet. " +
+      "Apps in Development Mode only work for accounts added to their test-user list (max 5)."
+    );
   }
   return `Spotify login failed (${errorCode}).`;
 }

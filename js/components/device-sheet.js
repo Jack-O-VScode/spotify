@@ -8,6 +8,7 @@
 import { el, clear } from "../dom.js";
 import { loadDevices, transferPlayback } from "../player.js";
 import { store } from "../state.js";
+import { enableSwipeToDismiss } from "./swipe-dismiss.js";
 
 let sheetEl = null;
 let listEl = null;
@@ -17,16 +18,20 @@ function ensureMounted() {
 
   listEl = el("div", { class: "device-list" });
 
-  sheetEl = el("div", { class: "sheet sheet-hidden", id: "device-sheet" }, [
-    el("div", { class: "sheet-backdrop", onclick: close }),
-    el("div", { class: "sheet-content" }, [
-      el("div", { class: "sheet-handle" }),
-      el("h2", { class: "sheet-title", text: "Select a device" }),
-      listEl,
-      el("button", { class: "btn-secondary sheet-close-button", type: "button", text: "Close", onclick: close }),
-    ]),
+  const handle = el("div", { class: "sheet-handle" });
+  const content = el("div", { class: "sheet-content" }, [
+    handle,
+    el("h2", { class: "sheet-title", text: "Select a device" }),
+    listEl,
+    el("button", { class: "btn-secondary sheet-close-button", type: "button", text: "Close", onclick: close }),
   ]);
 
+  sheetEl = el("div", { class: "sheet sheet-hidden", id: "device-sheet" }, [
+    el("div", { class: "sheet-backdrop", onclick: close }),
+    content,
+  ]);
+
+  enableSwipeToDismiss(handle, content, close);
   document.body.appendChild(sheetEl);
   store.addEventListener("devices", renderDevices);
   store.addEventListener("selected-device", renderDevices);

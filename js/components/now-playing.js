@@ -14,6 +14,7 @@ import { resume, pause, next, previous, seek, setShuffle, setRepeat, setVolume }
 
 import { open as openDeviceSheet } from "./device-sheet.js";
 import { open as openQueueSheet } from "./queue-sheet.js";
+import { enableSwipeToDismiss } from "./swipe-dismiss.js";
 import { icon } from "../icons.js";
 
 function setIcon(button, name, size) {
@@ -180,20 +181,24 @@ function buildSheet() {
   // tints its player. Purely decorative, so it stays out of the a11y tree.
   refs.ambient = el("div", { class: "sheet-ambient", "aria-hidden": "true" });
 
-  sheetEl = el("div", { class: "sheet sheet-hidden", id: "now-playing-sheet" }, [
-    el("div", { class: "sheet-backdrop", onclick: closeSheet }),
-    el("div", { class: "sheet-content sheet-content-player" }, [
-      refs.ambient,
-      el("div", { class: "sheet-handle" }),
-      el("div", { class: "sheet-player-toolbar" }, [
-        buildChevronButton(),
-        el("div", { class: "sheet-toolbar-actions" }, [buildQueueButton(), buildDeviceButton()]),
-      ]),
-      refs.playerBody,
-      refs.emptyState,
+  const handle = el("div", { class: "sheet-handle" });
+  const content = el("div", { class: "sheet-content sheet-content-player" }, [
+    refs.ambient,
+    handle,
+    el("div", { class: "sheet-player-toolbar" }, [
+      buildChevronButton(),
+      el("div", { class: "sheet-toolbar-actions" }, [buildQueueButton(), buildDeviceButton()]),
     ]),
+    refs.playerBody,
+    refs.emptyState,
   ]);
 
+  sheetEl = el("div", { class: "sheet sheet-hidden", id: "now-playing-sheet" }, [
+    el("div", { class: "sheet-backdrop", onclick: closeSheet }),
+    content,
+  ]);
+
+  enableSwipeToDismiss(handle, content, closeSheet);
   document.body.appendChild(sheetEl);
 }
 

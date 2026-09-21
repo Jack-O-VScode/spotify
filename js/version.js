@@ -5,4 +5,4 @@
 // instead of by guesswork.
 // ---------------------------------------------------------------------------
 
-export const BUILD_VERSION = "2026-09-22.4";
+export const BUILD_VERSION = "2026-09-22.5";

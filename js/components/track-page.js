@@ -13,6 +13,9 @@ import { store } from "../state.js";
 import { describeError } from "./async-states.js";
 
 // getPlayArgs(absoluteIndex, loadedUris) -> args object for player.play()
+// `controls` is an optional out-parameter: mountTrackPage fills it in so a
+// view can act on the tracks it loaded (e.g. a "Play all" button needs the
+// URIs for a list that has no addressable context_uri, like Liked Songs).
 export function mountTrackPage({
   listEl,
   loadMoreButton,
@@ -21,6 +24,7 @@ export function mountTrackPage({
   getPlayArgs,
   emptyMessage,
   mapItem,
+  controls = null,
 }) {
   const pager = createPager(pagerPath, { fallbackPath: fallbackPagerPath });
   const loadedUris = []; // absoluteIndex -> uri
@@ -28,6 +32,10 @@ export function mountTrackPage({
 
   const onPlaybackChange = () => updateHighlights(rowByIndex, loadedUris);
   store.addEventListener("playback", onPlaybackChange);
+
+  if (controls) {
+    controls.getLoadedUris = () => loadedUris.slice();
+  }
 
   async function loadNextPage() {
     const isFirstPage = loadedUris.length === 0;

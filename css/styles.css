@@ -338,12 +338,27 @@ p {
   transform: translateY(100%);
 }
 
+/* The visible grab bar is 4px, but it's also the swipe-to-dismiss target,
+   so padding gives it a finger-sized hit area without looking chunky.
+   touch-action stops the browser claiming the vertical drag for scrolling
+   before the dismiss gesture sees it. */
 .sheet-handle {
-  width: 36px;
+  width: 64px;
   height: 4px;
   border-radius: var(--radius-pill);
   background: var(--color-border);
   margin: 0 auto;
+  padding: 0;
+  box-sizing: content-box;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  background-clip: content-box;
+  touch-action: none;
+  cursor: grab;
+}
+
+.sheet-handle:active {
+  cursor: grabbing;
 }
 
 .sheet-title {
