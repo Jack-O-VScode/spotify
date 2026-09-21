@@ -370,12 +370,38 @@ p {
   padding: var(--space-2);
 }
 
+.sheet-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 .sheet-device-button {
   font-size: calc(13px * var(--text-scale));
   color: var(--color-text-secondary);
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Queue sheet */
+.queue-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.queue-section-label {
+  font-size: calc(11px * var(--text-scale));
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  padding: var(--space-3) 0 var(--space-1);
 }
 
 .sheet-player-body {
@@ -675,6 +701,39 @@ p {
 .detail-header-subtitle {
   font-size: calc(13px * var(--text-scale));
   color: var(--color-text-secondary);
+}
+
+/* Play / Shuffle on a playlist header */
+.playlist-actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.playlist-action {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  font-weight: 700;
+  font-size: calc(14px * var(--text-scale));
+}
+
+.playlist-action:active {
+  background: var(--color-surface-hover);
+}
+
+.playlist-action-primary {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.playlist-action-primary:active {
+  background: var(--color-accent-hover);
 }
 
 /* ---------------------------------------------------------------------------

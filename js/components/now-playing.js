@@ -13,6 +13,7 @@ import { store } from "../state.js";
 import { resume, pause, next, previous, seek, setShuffle, setRepeat, setVolume } from "../player.js";
 
 import { open as openDeviceSheet } from "./device-sheet.js";
+import { open as openQueueSheet } from "./queue-sheet.js";
 import { icon } from "../icons.js";
 
 function setIcon(button, name, size) {
@@ -181,7 +182,7 @@ function buildSheet() {
       el("div", { class: "sheet-handle" }),
       el("div", { class: "sheet-player-toolbar" }, [
         buildChevronButton(),
-        buildDeviceButton(),
+        el("div", { class: "sheet-toolbar-actions" }, [buildQueueButton(), buildDeviceButton()]),
       ]),
       refs.playerBody,
       refs.emptyState,
@@ -203,6 +204,13 @@ function buildDeviceButton() {
     el("span", { text: "Devices" }),
   ]);
   return button;
+}
+
+function buildQueueButton() {
+  return el("button", { class: "sheet-device-button", type: "button", onclick: openQueueSheet }, [
+    icon("queue", { size: 16 }),
+    el("span", { text: "Queue" }),
+  ]);
 }
 
 function openSheet() {

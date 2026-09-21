@@ -132,4 +132,17 @@ function registerRoutesOnce() {
   registerRoute("/settings", settings.render);
 }
 
+// Registered after boot so a service-worker failure can never keep the app
+// itself from starting. Scope is relative, which keeps it working under a
+// GitHub Pages project subpath as well as at a domain root.
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {
+      // Offline support is a bonus; the app works fine without it.
+    });
+  });
+}
+
 main();
+registerServiceWorker();

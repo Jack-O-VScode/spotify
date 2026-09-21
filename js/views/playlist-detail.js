@@ -11,6 +11,8 @@ import { pickImage } from "../format.js";
 import { navigate } from "../router.js";
 import { renderLoading, renderError } from "../components/async-states.js";
 import { mountTrackPage } from "../components/track-page.js";
+import { play, setShuffle } from "../player.js";
+import { icon } from "../icons.js";
 
 // Deliberately no `fields=` filter. Spotify's Feb/March 2026 migration
 // renamed the playlist track-count field (tracks.total -> items.total) on
@@ -43,6 +45,39 @@ async function load(container, playlistId, disposeBag) {
   }
 }
 
+function buildPlaylistActions(contextUri) {
+  const playButton = el(
+    "button",
+    {
+      class: "playlist-action playlist-action-primary",
+      type: "button",
+      onclick: async () => {
+        // Turn shuffle off first so "Play" starts at the top, which is what
+        // the button implies — otherwise it inherits whatever shuffle state
+        // was left on from last time.
+        await setShuffle(false);
+        play({ contextUri, offset: { position: 0 } });
+      },
+    },
+    [icon("play", { size: 18 }), el("span", { text: "Play" })]
+  );
+
+  const shuffleButton = el(
+    "button",
+    {
+      class: "playlist-action",
+      type: "button",
+      onclick: async () => {
+        await setShuffle(true);
+        play({ contextUri });
+      },
+    },
+    [icon("shuffle", { size: 18 }), el("span", { text: "Shuffle" })]
+  );
+
+  return el("div", { class: "playlist-actions" }, [playButton, shuffleButton]);
+}
+
 function renderShell(container, playlist, disposeBag) {
   clear(container);
 
@@ -67,6 +102,8 @@ function renderShell(container, playlist, disposeBag) {
       }),
     ])
   );
+
+  page.appendChild(buildPlaylistActions(contextUri));
 
   const listEl = el("div", { class: "track-list" });
   page.appendChild(listEl);
