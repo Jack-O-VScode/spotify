@@ -1,27 +1,27 @@
 /* ===========================================================================
-   THEME TOKENS
+   DESIGN TOKENS
    ===========================================================================
-   Every colour, font, radius and spacing value the app uses lives here, as
-   CSS custom properties, grouped into one block per theme. Nothing outside
-   this file should ever contain a hardcoded hex colour, font name, or radius.
+   Every colour, font, radius and spacing value in the app is declared here
+   as a CSS custom property. Nothing in css/styles.css hardcodes a colour.
 
-   HOW TO ADD A 4TH THEME (or your own):
-     1. Copy one of the three ":root[data-theme=\"...\"] { ... }" blocks below
-        end to end.
-     2. Change its selector to a new id, e.g. :root[data-theme="sunset"].
-     3. Change the hex values inside — the --space-*, --font-*, --tab-bar-height
-        etc. tokens are safe to leave alone unless you want different spacing
-        or rounding too.
-     4. Add { id: "sunset", name: "Sunset" } to the THEMES array in
-        js/theme.js so it shows up in Settings.
-     That's the whole process — no other file needs to change.
+   The colour tokens below are only the *defaults*. At runtime js/theme.js
+   overwrites them on the <html> element from the user's chosen background /
+   bar / accent colours, deriving text, borders, surfaces and button label
+   colours from those picks so any combination stays readable. See
+   js/color.js for that maths, and the "Appearance" section of the README.
+
+   Changing a default here changes what a fresh install looks like before
+   anyone touches Settings. To add a *preset* users can pick, add an entry to
+   PRESETS in js/theme.js instead — that's all a preset is.
    =========================================================================== */
 
-/* Shared tokens — identical across all themes (spacing/type/radius scale,
-   not colour). Individual themes below can still override any of these if a
-   theme wants, say, sharper corners, but none of the three presets do. */
 :root {
+  /* --- Type, spacing, shape: shared by every appearance ------------------ */
   --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  /* Multiplied into every font-size so the Text size setting scales the
+     whole app rather than one screen. */
+  --text-scale: 1;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -40,83 +40,33 @@
 
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
-}
 
-/* ---------------------------------------------------------------------------
-   Theme: Midnight (default) — classic Spotify-esque near-black with green.
-   --------------------------------------------------------------------------- */
-:root[data-theme="midnight"] {
+  /* --- Colour defaults (the "Midnight" appearance) ----------------------- */
   --color-bg: #121212;
+  --bg-image: none;
   --color-bg-elevated: #181818;
-  --color-surface: #282828;
-  --color-surface-hover: #3a3a3a;
-  --color-border: #2a2a2a;
+  --color-bar-text: #ffffff;
+  --color-bar-text-secondary: #b3b3b3;
+
+  --color-surface: #262626;
+  --color-surface-hover: #333333;
+  --color-border: #2e2e2e;
 
   --color-text: #ffffff;
   --color-text-secondary: #b3b3b3;
-  --color-text-tertiary: #727272;
+  --color-text-tertiary: #7d7d7d;
 
   --color-accent: #1db954;
-  --color-accent-hover: #1ed760;
-  --color-on-accent: #000000;
+  --color-accent-hover: #3fc96d;
+  --color-on-accent: #0d0d0f;
 
-  --color-error: #f15e6c;
-  --color-error-bg: #3a1518;
-  --color-warning: #f2a900;
+  --color-error: #ff6b7e;
+  --color-error-bg: #33191d;
+  --color-warning: #ffc247;
 
-  --shadow-sheet: 0 -8px 24px rgba(0, 0, 0, 0.5);
-  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.4);
-}
+  --glass-bar: rgba(24, 24, 24, 0.72);
+  --glass-surface: rgba(38, 38, 38, 0.68);
 
-/* ---------------------------------------------------------------------------
-   Theme: Daylight — clean light theme.
-   --------------------------------------------------------------------------- */
-:root[data-theme="daylight"] {
-  --color-bg: #ffffff;
-  --color-bg-elevated: #f7f7f7;
-  --color-surface: #eeeeee;
-  --color-surface-hover: #e2e2e2;
-  --color-border: #e0e0e0;
-
-  --color-text: #121212;
-  --color-text-secondary: #5e5e5e;
-  --color-text-tertiary: #8a8a8a;
-
-  --color-accent: #1db954;
-  --color-accent-hover: #169c46;
-  --color-on-accent: #000000;
-
-  --color-error: #d1293d;
-  --color-error-bg: #fbe4e6;
-  --color-warning: #a15c00;
-
-  --shadow-sheet: 0 -8px 24px rgba(0, 0, 0, 0.12);
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* ---------------------------------------------------------------------------
-   Theme: Neon — true-black AMOLED with a loud neon accent, for something
-   further from stock Spotify.
-   --------------------------------------------------------------------------- */
-:root[data-theme="neon"] {
-  --color-bg: #000000;
-  --color-bg-elevated: #0a0a0c;
-  --color-surface: #16161a;
-  --color-surface-hover: #212127;
-  --color-border: #1f1f24;
-
-  --color-text: #f5f5ff;
-  --color-text-secondary: #9d9dae;
-  --color-text-tertiary: #6b6b7a;
-
-  --color-accent: #ff2fb0;
-  --color-accent-hover: #ff5ec4;
-  --color-on-accent: #0a0a0c;
-
-  --color-error: #ff5e7a;
-  --color-error-bg: #2a0f18;
-  --color-warning: #38e1ff;
-
-  --shadow-sheet: 0 -8px 32px rgba(255, 47, 176, 0.15);
-  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.6);
+  --shadow-card: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --shadow-sheet: 0 -8px 28px rgba(0, 0, 0, 0.55);
 }

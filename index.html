@@ -16,20 +16,29 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Remote" />
 
-  <!-- Applied before first paint so switching themes never flashes the old
-       one on load. Kept tiny and inline on purpose — this can't wait for a
-       module script. Mirrors js/theme.js's storage key/default. -->
+  <!-- Applied before first paint so a customised appearance never flashes
+       the default one on load. js/theme.js persists the *resolved* token
+       map alongside the settings precisely so this can stay a dumb loop
+       with none of the colour maths duplicated in it. -->
   <script>
     (function () {
-      var THEME_IDS = ["midnight", "daylight", "neon"];
-      var stored;
       try {
-        stored = localStorage.getItem("spotify_remote_theme");
-      } catch (e) {}
-      document.documentElement.setAttribute(
-        "data-theme",
-        THEME_IDS.indexOf(stored) !== -1 ? stored : "midnight"
-      );
+        var saved = JSON.parse(localStorage.getItem("spotify_remote_appearance") || "null");
+        if (!saved || !saved.tokens) return;
+        var root = document.documentElement;
+        for (var name in saved.tokens) {
+          if (Object.prototype.hasOwnProperty.call(saved.tokens, name)) {
+            root.style.setProperty(name, saved.tokens[name]);
+          }
+        }
+        root.setAttribute(
+          "data-buttons",
+          saved.settings && saved.settings.buttons === "glass" ? "glass" : "solid"
+        );
+      } catch (e) {
+        // No saved appearance, or storage unavailable — the stylesheet
+        // defaults cover it.
+      }
     })();
   </script>
 
