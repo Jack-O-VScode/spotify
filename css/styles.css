@@ -236,11 +236,22 @@ p {
   text-overflow: ellipsis;
 }
 
-.mini-bar-next,
+.mini-bar-transport,
 .mini-bar-playpause {
-  font-size: 20px;
   padding: var(--space-2);
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Play/pause is the one you reach for most, so give it the emphasis. */
+.mini-bar-playpause {
+  color: var(--color-accent);
+}
+
+.mini-bar-transport {
+  color: var(--color-text);
 }
 
 /* ---------------------------------------------------------------------------
@@ -817,6 +828,13 @@ p {
   color: var(--color-error);
 }
 
+.build-version {
+  margin-top: var(--space-4);
+  text-align: center;
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+}
+
 /* ---------------------------------------------------------------------------
    Loading / error / empty states
    --------------------------------------------------------------------------- */
@@ -836,6 +854,8 @@ p {
   color: var(--color-error);
   text-align: center;
   font-size: 14px;
+  /* describeError() puts the endpoint/status detail on a second line. */
+  white-space: pre-line;
 }
 
 /* ---------------------------------------------------------------------------
@@ -861,6 +881,7 @@ p {
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
   font-size: 13px;
+  white-space: pre-line;
   box-shadow: var(--shadow-card);
   opacity: 0;
   transform: translateY(8px);

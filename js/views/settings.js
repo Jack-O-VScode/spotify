@@ -10,6 +10,7 @@ import { logout } from "../auth.js";
 import { renderError } from "../components/async-states.js";
 import { open as openDeviceSheet } from "../components/device-sheet.js";
 import { icon } from "../icons.js";
+import { BUILD_VERSION } from "../version.js";
 
 export function render(container) {
   load(container);
@@ -49,6 +50,8 @@ async function load(container) {
       },
     })
   );
+
+  page.appendChild(el("p", { class: "build-version", text: `Build ${BUILD_VERSION}` }));
 
   container.appendChild(page);
 

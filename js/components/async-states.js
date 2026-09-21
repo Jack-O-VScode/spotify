@@ -31,6 +31,13 @@ export function describeError(err) {
     return `Spotify is rate-limiting us. Try again in ${err.retryAfterSeconds}s.`;
   }
   if (err instanceof OfflineError) return err.message;
-  if (err instanceof ApiError) return err.message;
+  if (err instanceof ApiError) {
+    // Append the endpoint and Spotify's own reason code when present.
+    // Spotify's generic messages ("Forbidden") say nothing on their own,
+    // and this app talks to enough endpoints that knowing which one
+    // refused is what makes a report actionable.
+    const detail = [err.status, err.reason, err.path].filter(Boolean).join(" · ");
+    return detail ? `${err.message}\n(${detail})` : err.message;
+  }
   return `Something went wrong: ${err.message}`;
 }

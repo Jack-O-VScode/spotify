@@ -29,9 +29,15 @@ export class NoActiveDeviceError extends Error {
 }
 
 export class ApiError extends Error {
-  constructor(status, message) {
+  // `path` and Spotify's own `reason` are carried along because a bare
+  // "Forbidden" is undiagnosable — knowing *which* endpoint refused, and
+  // why Spotify says it refused, is the difference between fixing this in
+  // one round and guessing for three.
+  constructor(status, message, { path, reason } = {}) {
     super(message);
     this.status = status;
+    this.path = path;
+    this.reason = reason;
   }
 }
 
@@ -76,10 +82,22 @@ export async function apiFetch(path, options = {}, { _retried = false } = {}) {
 
   if (response.status === 403) {
     const body = await safeJson(response);
-    if (body?.error?.reason === "PREMIUM_REQUIRED") {
-      throw new ApiError(403, "This requires Spotify Premium.");
+    const reason = body?.error?.reason;
+    if (reason === "PREMIUM_REQUIRED") {
+      throw new ApiError(403, "This requires Spotify Premium.", { path, reason });
     }
-    throw new ApiError(403, body?.error?.message || "Not permitted.");
+    throw new ApiError(403, body?.error?.message || "Not permitted.", { path, reason });
+  }
+
+  if (response.status === 502 || response.status === 503) {
+    // Spotify commonly returns these when the target Connect device has gone
+    // away mid-request (app closed, device asleep) rather than because
+    // Spotify itself is down, so say something the user can act on.
+    throw new ApiError(
+      response.status,
+      "Spotify couldn't reach the device. Make sure the Spotify app is open on it, then try again.",
+      { path }
+    );
   }
 
   if (response.status === 404 && isDeviceRequiredEndpoint(path)) {
@@ -93,7 +111,10 @@ export async function apiFetch(path, options = {}, { _retried = false } = {}) {
 
   if (!response.ok) {
     const body = await safeJson(response);
-    throw new ApiError(response.status, body?.error?.message || response.statusText);
+    throw new ApiError(response.status, body?.error?.message || response.statusText, {
+      path,
+      reason: body?.error?.reason,
+    });
   }
 
   if (response.status === 204) return null;

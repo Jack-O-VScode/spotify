@@ -11,6 +11,7 @@ import { el, clear } from "../dom.js";
 import { formatDuration, joinArtists, pickImage } from "../format.js";
 import { store } from "../state.js";
 import { resume, pause, next, previous, seek, setShuffle, setRepeat, setVolume } from "../player.js";
+
 import { open as openDeviceSheet } from "./device-sheet.js";
 import { icon } from "../icons.js";
 
@@ -73,7 +74,10 @@ function buildMiniBar() {
   setIcon(refs.miniPlayPause, "play", 22);
   refs.miniProgress = el("div", { class: "mini-bar-progress-fill" });
 
-  const miniNextButton = el("button", { class: "mini-bar-next", type: "button", onclick: stopPropAnd(next) });
+  const miniPrevButton = el("button", { class: "mini-bar-transport", type: "button", onclick: stopPropAnd(previous) });
+  setIcon(miniPrevButton, "previous", 20);
+
+  const miniNextButton = el("button", { class: "mini-bar-transport", type: "button", onclick: stopPropAnd(next) });
   setIcon(miniNextButton, "next", 20);
 
   miniBarEl = el("div", { class: "mini-bar mini-bar-hidden", onclick: handleMiniBarClick }, [
@@ -81,8 +85,9 @@ function buildMiniBar() {
     el("div", { class: "mini-bar-row" }, [
       refs.miniArt,
       el("div", { class: "mini-bar-text" }, [refs.miniTitle, refs.miniArtist]),
-      miniNextButton,
+      miniPrevButton,
       refs.miniPlayPause,
+      miniNextButton,
     ]),
   ]);
 

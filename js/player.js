@@ -111,7 +111,10 @@ function handleActionError(err) {
     showToast(err.message, { variant: "error" });
     return;
   }
-  if (err instanceof ApiError && err.status === 403) {
+  if (err instanceof ApiError) {
+    // Spotify's own message (or the friendlier one api.js substitutes) is
+    // already the useful part — prefixing it with "Something went wrong"
+    // just buries it.
     showToast(err.message, { variant: "error" });
     return;
   }

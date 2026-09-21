@@ -12,11 +12,12 @@ import { navigate } from "../router.js";
 import { renderLoading, renderError } from "../components/async-states.js";
 import { mountTrackPage } from "../components/track-page.js";
 
-// Spotify's Feb/March 2026 migration renamed the playlist's track-count
-// field from `tracks.total` to `items.total` on new Development Mode
-// apps — requesting both is harmless (an unknown field is just omitted
-// from the response) and works whichever name is actually in effect.
-const FIELDS = "id,name,images,owner.display_name,tracks.total,items.total";
+// Deliberately no `fields=` filter. Spotify's Feb/March 2026 migration
+// renamed the playlist track-count field (tracks.total -> items.total) on
+// Development Mode apps, and a `fields` filter naming the wrong one just
+// silently omits it — which is exactly how this ended up rendering
+// "0 tracks". Fetching the whole object and reading whichever field is
+// actually present is a few KB more and one less thing to get wrong.
 
 export function render(container, params) {
   const playlistId = params.id;
@@ -32,7 +33,7 @@ export function render(container, params) {
 async function load(container, playlistId, disposeBag) {
   renderLoading(container, "Loading playlist…");
   try {
-    const playlist = await apiFetch(`/playlists/${encodeURIComponent(playlistId)}?fields=${FIELDS}`);
+    const playlist = await apiFetch(`/playlists/${encodeURIComponent(playlistId)}`);
     // The user may have navigated elsewhere while this was in flight.
     if (window.location.hash !== `#/playlist/${playlistId}`) return;
     renderShell(container, playlist, disposeBag);
