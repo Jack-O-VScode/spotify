@@ -138,10 +138,25 @@ p {
   padding-bottom: calc(var(--tab-bar-height) + var(--now-playing-bar-height) + var(--safe-bottom) + var(--space-4));
 }
 
+/* Centred with a ceiling so track lists and settings rows don't stretch to
+   absurd line lengths on an iPad or desktop. Phones are far below the cap
+   and are unaffected. */
 .page {
   padding: var(--space-4);
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* The bars span the full window, but their contents follow the same
+   measure as the page above them. */
+.mini-bar-row,
+.tab-bar {
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .tab-bar {
@@ -343,6 +358,21 @@ p {
 
 .sheet-hidden .sheet-content {
   transform: translateY(100%);
+}
+
+/* On a tablet or desktop a full-bleed sheet looks like a broken page
+   rather than a sheet, so cap it and centre it. Phones sit below the cap
+   and keep the edge-to-edge treatment.
+
+   Centred with auto margins rather than translateX(-50%) on purpose: the
+   transform property is already carrying the open/close slide *and* the
+   live offset written by swipe-to-dismiss, so anything centring via
+   transform would be clobbered mid-drag and snap the sheet to the edge. */
+@media (min-width: 700px) {
+  .sheet-content {
+    width: min(560px, 100%);
+    margin: 0 auto;
+  }
 }
 
 /* The visible grab bar is 4px, but it's also the swipe-to-dismiss target,
@@ -695,9 +725,12 @@ p {
   margin: var(--space-2) 0 var(--space-3);
 }
 
+/* auto-fill rather than a fixed 2 columns: on a phone that still yields
+   two, but on an iPad or desktop it fills the width with sensibly-sized
+   cards instead of two enormous ones. */
 .playlist-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: var(--space-3);
 }
 
