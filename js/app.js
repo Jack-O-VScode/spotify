@@ -1,118 +1,122 @@
 // ---------------------------------------------------------------------------
-// Entry point for verifying the login flow end to end. This intentionally
-// does NOT build any app UI yet (playlists, player, theming) — just enough
-// to prove: login redirects out and back correctly, tokens are stored,
-// GET /me succeeds, Premium status is detected, and logout clears state.
-// The real UI gets layered on top of this once the flow is verified.
+// App shell: auth gate, tab bar + routed view container (Spotify-app-like
+// navigation), and wiring for the persistent now-playing bar/sheet, device
+// sheet, and playback polling. Individual features live in js/views/*.
 // ---------------------------------------------------------------------------
 
-import { redirectToLogin, handleRedirectIfPresent, isLoggedIn, logout, AuthRequiredError } from "./auth.js";
-import { apiFetch, RateLimitedError, OfflineError, ApiError } from "./api.js";
+import { redirectToLogin, handleRedirectIfPresent, isLoggedIn, logout, onAuthRequired } from "./auth.js";
+import { initTheme } from "./theme.js";
+import { el, clear } from "./dom.js";
+import { registerRoute, initRouter, handleRouteChange, navigate, currentBaseRoute } from "./router.js";
+import * as library from "./views/library.js";
+import * as playlistDetail from "./views/playlist-detail.js";
+import * as liked from "./views/liked.js";
+import * as recent from "./views/recent.js";
+import * as settings from "./views/settings.js";
+import * as nowPlaying from "./components/now-playing.js";
+import { startPolling, stopPolling } from "./player.js";
+import { showToast } from "./toast.js";
+import { icon } from "./icons.js";
 
 const root = document.getElementById("app");
+
+initTheme();
+
+// Registered once, before any fetch can possibly fire: a dead session
+// (revoked refresh token, or none at all) can be discovered by playback
+// polling, a view's data fetch, or the settings profile lookup alike, and
+// all of them should land here rather than each view handling it themselves.
+onAuthRequired(handleGlobalAuthRequired);
 
 async function main() {
   const redirectResult = await handleRedirectIfPresent();
   if (redirectResult && !redirectResult.ok) {
-    renderError(redirectResult.message);
+    renderLoginScreen(redirectResult.message);
     return;
   }
 
   if (!isLoggedIn()) {
-    renderLoggedOut();
+    renderLoginScreen();
     return;
   }
 
-  await renderLoggedIn();
+  renderAppShell();
 }
 
-function renderLoggedOut() {
-  root.innerHTML = "";
-  const button = document.createElement("button");
-  button.textContent = "Log in with Spotify";
-  button.className = "login-button";
-  button.addEventListener("click", () => {
-    redirectToLogin();
-  });
-  root.appendChild(button);
+function renderLoginScreen(errorMessage) {
+  stopPolling();
+  clear(root);
+
+  const screen = el("div", { class: "login-screen" }, [
+    errorMessage ? el("div", { class: "error-banner", text: errorMessage }) : null,
+    el("div", { class: "login-brand" }, [
+      el("div", { class: "login-logo" }, "♫"),
+      el("h1", { class: "login-title", text: "Spotify Remote" }),
+      el("p", { class: "login-subtitle", text: "Your library, your playback, your look." }),
+    ]),
+    el("button", { class: "login-button", type: "button", text: "Log in with Spotify", onclick: () => redirectToLogin() }),
+  ]);
+
+  root.appendChild(screen);
 }
 
-async function renderLoggedIn() {
-  root.innerHTML = "<p>Loading your profile…</p>";
-  try {
-    const profile = await apiFetch("/me");
-    renderProfile(profile);
-  } catch (err) {
-    handleFetchError(err);
-  }
+let authRequiredHandled = false;
+function handleGlobalAuthRequired() {
+  // Several in-flight requests can all discover the dead session around the
+  // same moment (a poll tick plus a view fetch, say) — only react once.
+  if (authRequiredHandled) return;
+  authRequiredHandled = true;
+  showToast("Your session expired. Please log in again.", { variant: "error" });
+  logout();
+  renderLoginScreen();
 }
 
-function renderProfile(profile) {
-  root.innerHTML = "";
+function renderAppShell() {
+  clear(root);
 
-  const isPremium = profile.product === "premium";
+  const viewContainer = el("div", { class: "view-container" });
 
-  const card = document.createElement("div");
-  card.className = "profile-card";
+  const tabs = [
+    { route: "#/library", label: "Library", iconName: "library", matches: (base) => base !== "/settings" },
+    { route: "#/settings", label: "Settings", iconName: "settings", matches: (base) => base === "/settings" },
+  ];
 
-  const name = document.createElement("h1");
-  name.textContent = profile.display_name || profile.id;
-  card.appendChild(name);
+  const tabButtons = tabs.map((tab) =>
+    el("button", { class: "tab-button", type: "button", onclick: () => navigate(tab.route) }, [
+      el("span", { class: "tab-icon" }, [icon(tab.iconName, { size: 22 })]),
+      el("span", { class: "tab-label", text: tab.label }),
+    ])
+  );
 
-  const status = document.createElement("p");
-  status.className = isPremium ? "premium-yes" : "premium-no";
-  status.textContent = isPremium
-    ? "Spotify Premium — playback control available."
-    : "This account is not Premium. Playback control (play/pause/skip/volume) will not work — Spotify requires Premium for the player API. Browsing will still work.";
-  card.appendChild(status);
+  const tabBar = el("nav", { class: "tab-bar" }, tabButtons);
 
-  const logoutButton = document.createElement("button");
-  logoutButton.textContent = "Log out";
-  logoutButton.className = "logout-button";
-  logoutButton.addEventListener("click", () => {
-    logout();
-    renderLoggedOut();
-  });
-  card.appendChild(logoutButton);
+  function updateActiveTab() {
+    const base = currentBaseRoute();
+    tabs.forEach((tab, i) => tabButtons[i].classList.toggle("tab-button-active", tab.matches(base)));
+  }
 
-  root.appendChild(card);
+  root.appendChild(viewContainer);
+  root.appendChild(tabBar);
+
+  registerRoutesOnce();
+  initRouter(viewContainer);
+  window.addEventListener("hashchange", updateActiveTab);
+  handleRouteChange();
+  updateActiveTab();
+
+  nowPlaying.init();
+  startPolling();
 }
 
-function handleFetchError(err) {
-  if (err instanceof AuthRequiredError) {
-    renderLoggedOut();
-    return;
-  }
-  if (err instanceof RateLimitedError) {
-    renderError(`Spotify is rate-limiting us. Try again in ${err.retryAfterSeconds}s.`);
-    return;
-  }
-  if (err instanceof OfflineError) {
-    renderError(err.message);
-    return;
-  }
-  if (err instanceof ApiError) {
-    renderError(`Spotify API error: ${err.message}`);
-    return;
-  }
-  renderError(`Unexpected error: ${err.message}`);
-}
-
-function renderError(message) {
-  root.innerHTML = "";
-  const banner = document.createElement("div");
-  banner.className = "error-banner";
-  banner.textContent = message;
-  root.appendChild(banner);
-
-  const button = document.createElement("button");
-  button.textContent = "Back to login";
-  button.className = "login-button";
-  button.addEventListener("click", () => {
-    logout();
-    renderLoggedOut();
-  });
-  root.appendChild(button);
+let routesRegistered = false;
+function registerRoutesOnce() {
+  if (routesRegistered) return;
+  routesRegistered = true;
+  registerRoute("/library", library.render);
+  registerRoute("/playlist/:id", playlistDetail.render);
+  registerRoute("/liked", liked.render);
+  registerRoute("/recent", recent.render);
+  registerRoute("/settings", settings.render);
 }
 
 main();

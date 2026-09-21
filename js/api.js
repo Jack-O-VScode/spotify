@@ -7,7 +7,7 @@
 
 import { getValidAccessToken, forceRefreshAccessToken, AuthRequiredError } from "./auth.js";
 
-const API_BASE = "https://api.spotify.com/v1";
+export const API_BASE = "https://api.spotify.com/v1";
 
 export class RateLimitedError extends Error {
   constructor(retryAfterSeconds) {

@@ -16,6 +16,24 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Remote" />
 
+  <!-- Applied before first paint so switching themes never flashes the old
+       one on load. Kept tiny and inline on purpose — this can't wait for a
+       module script. Mirrors js/theme.js's storage key/default. -->
+  <script>
+    (function () {
+      var THEME_IDS = ["midnight", "daylight", "neon"];
+      var stored;
+      try {
+        stored = localStorage.getItem("spotify_remote_theme");
+      } catch (e) {}
+      document.documentElement.setAttribute(
+        "data-theme",
+        THEME_IDS.indexOf(stored) !== -1 ? stored : "midnight"
+      );
+    })();
+  </script>
+
+  <link rel="stylesheet" href="css/themes.css" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>

@@ -221,7 +221,23 @@ export async function forceRefreshAccessToken() {
   return refreshInFlight;
 }
 
-export class AuthRequiredError extends Error {}
+// A dead session (no tokens, or refresh itself failed/was revoked) can
+// surface from any apiFetch call site — playback polling, a view's own
+// fetch, a settings page profile lookup. Rather than have every call site
+// remember to bounce back to the login screen, the error notifies a single
+// app-level handler itself, registered once via onAuthRequired() below.
+const authRequiredListeners = [];
+
+export function onAuthRequired(handler) {
+  authRequiredListeners.push(handler);
+}
+
+export class AuthRequiredError extends Error {
+  constructor(message) {
+    super(message);
+    for (const listener of authRequiredListeners) listener();
+  }
+}
 
 function describeAuthError(errorCode) {
   if (errorCode === "access_denied") {

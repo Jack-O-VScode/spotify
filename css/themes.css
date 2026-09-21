@@ -1,0 +1,122 @@
+/* ===========================================================================
+   THEME TOKENS
+   ===========================================================================
+   Every colour, font, radius and spacing value the app uses lives here, as
+   CSS custom properties, grouped into one block per theme. Nothing outside
+   this file should ever contain a hardcoded hex colour, font name, or radius.
+
+   HOW TO ADD A 4TH THEME (or your own):
+     1. Copy one of the three ":root[data-theme=\"...\"] { ... }" blocks below
+        end to end.
+     2. Change its selector to a new id, e.g. :root[data-theme="sunset"].
+     3. Change the hex values inside — the --space-*, --font-*, --tab-bar-height
+        etc. tokens are safe to leave alone unless you want different spacing
+        or rounding too.
+     4. Add { id: "sunset", name: "Sunset" } to the THEMES array in
+        js/theme.js so it shows up in Settings.
+     That's the whole process — no other file needs to change.
+   =========================================================================== */
+
+/* Shared tokens — identical across all themes (spacing/type/radius scale,
+   not colour). Individual themes below can still override any of these if a
+   theme wants, say, sharper corners, but none of the three presets do. */
+:root {
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  --tab-bar-height: 56px;
+  --now-playing-bar-height: 64px;
+
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+
+/* ---------------------------------------------------------------------------
+   Theme: Midnight (default) — classic Spotify-esque near-black with green.
+   --------------------------------------------------------------------------- */
+:root[data-theme="midnight"] {
+  --color-bg: #121212;
+  --color-bg-elevated: #181818;
+  --color-surface: #282828;
+  --color-surface-hover: #3a3a3a;
+  --color-border: #2a2a2a;
+
+  --color-text: #ffffff;
+  --color-text-secondary: #b3b3b3;
+  --color-text-tertiary: #727272;
+
+  --color-accent: #1db954;
+  --color-accent-hover: #1ed760;
+  --color-on-accent: #000000;
+
+  --color-error: #f15e6c;
+  --color-error-bg: #3a1518;
+  --color-warning: #f2a900;
+
+  --shadow-sheet: 0 -8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* ---------------------------------------------------------------------------
+   Theme: Daylight — clean light theme.
+   --------------------------------------------------------------------------- */
+:root[data-theme="daylight"] {
+  --color-bg: #ffffff;
+  --color-bg-elevated: #f7f7f7;
+  --color-surface: #eeeeee;
+  --color-surface-hover: #e2e2e2;
+  --color-border: #e0e0e0;
+
+  --color-text: #121212;
+  --color-text-secondary: #5e5e5e;
+  --color-text-tertiary: #8a8a8a;
+
+  --color-accent: #1db954;
+  --color-accent-hover: #169c46;
+  --color-on-accent: #000000;
+
+  --color-error: #d1293d;
+  --color-error-bg: #fbe4e6;
+  --color-warning: #a15c00;
+
+  --shadow-sheet: 0 -8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ---------------------------------------------------------------------------
+   Theme: Neon — true-black AMOLED with a loud neon accent, for something
+   further from stock Spotify.
+   --------------------------------------------------------------------------- */
+:root[data-theme="neon"] {
+  --color-bg: #000000;
+  --color-bg-elevated: #0a0a0c;
+  --color-surface: #16161a;
+  --color-surface-hover: #212127;
+  --color-border: #1f1f24;
+
+  --color-text: #f5f5ff;
+  --color-text-secondary: #9d9dae;
+  --color-text-tertiary: #6b6b7a;
+
+  --color-accent: #ff2fb0;
+  --color-accent-hover: #ff5ec4;
+  --color-on-accent: #0a0a0c;
+
+  --color-error: #ff5e7a;
+  --color-error-bg: #2a0f18;
+  --color-warning: #38e1ff;
+
+  --shadow-sheet: 0 -8px 32px rgba(255, 47, 176, 0.15);
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.6);
+}
